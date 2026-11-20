@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAVORIA — Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="modal-overlay" id="orderModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Order Details <span id="modalOrderId" style="color:var(--gold-2)"></span></h3>
+      <button class="close-btn" onclick="closeModal('orderModal')">×</button>
+    </div>
+    <div id="orderModalContent">
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addDishModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Add New Dish</h3>
+      <button class="close-btn" onclick="closeModal('addDishModal')">×</button>
+    </div>
+    <form onsubmit="handleAddDish(event)">
+      <div class="field">
+        <label>Dish Name</label>
+        <input type="text" id="newDishName" required placeholder="e.g. Tandoori Chicken">
+      </div>
+      <div class="field">
+        <label>Price (₹)</label>
+        <input type="number" id="newDishPrice" required placeholder="e.g. 399">
+      </div>
+      <div class="field">
+        <label>Category</label>
+        <select id="newDishCat" required>
+          <option value="Starters">Starters</option>
+          <option value="Main Course">Main Course</option>
+          <option value="Pizza">Pizza</option>
+          <option value="Burgers">Burgers</option>
+          <option value="Desserts">Desserts</option>
+          <option value="Beverages">Beverages</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Type</label>
+        <select id="newDishType" required>
+          <option value="true">Veg</option>
+          <option value="false">Non-Veg</option>
+        </select>
+      </div>
+      <button type="submit" class="login-btn" style="margin-top:20px">Save Dish</button>
+    </form>
+  </div>
+</div>
+
+<div id="loginScreen">
+  <div class="login-bg"></div>
+  <div class="login-card">
+    <div class="logo" style="justify-content:center;margin-bottom:20px"><span>S</span>SAVORIA</div>
+    <h2>Admin Portal</h2>
+    <p>Enter your credentials to access the dashboard</p>
+    
+    <form onsubmit="handleLogin(event)">
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="adminEmail" value="admin@savoria.com" required>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="adminPass" value="admin123" required>
+      </div>
+      <button type="submit" class="login-btn">Login to Dashboard</button>
+    </form>
+    <p style="margin-top:20px;font-size:.8rem">Demo: admin@savoria.com / admin123</p>
+  </div>
+</div>
+
+<div class="app-container hidden" id="appContainer">
+  
+  <aside class="sidebar" id="sidebar">
+    <div class="logo"><span>S</span>SAVORIA</div>
+    
+    <div class="nav-item active" onclick="switchTab('dashboard', this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" onclick="switchTab('orders', this)">
+      <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      Orders Management
+    </div>
+    <div class="nav-item" onclick="switchTab('menu', this)">
+      <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Menu Items
+    </div>
+    <div class="nav-item" onclick="switchTab('customers', this)">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Customers
+    </div>
+    
+    <div style="margin-top:auto">
+      <div class="nav-item" onclick="logout()">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    
+    <header class="topbar">
+      <div style="display:flex;align-items:center">
+        <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="page-title" id="pageTitle">Dashboard Overview</div>
+      </div>
+      
+      <div style="display:flex;align-items:center">
+        <div class="admin-profile">
+          <div class="admin-avatar">A</div>
+          <div class="admin-info">
+            <b>Super Admin</b>
+            <small>admin@savoria.com</small>
+          </div>
+        </div>
+        <div class="logout-btn" onclick="logout()">Logout</div>
+      </div>
+    </header>
+
+    <div class="content-pad">
+      
+      <div id="dashboardTab" class="fade-in">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-title">Total Revenue <span>💰</span></div>
+            <div class="kpi-value" id="totalRevenue">₹0</div>
+            <div class="kpi-trend up">↑ 12.5% <span style="color:var(--muted);font-weight:400">vs last week</span></div>
+          </div>
+          <div class="kpi-card blue">
+            <div class="kpi-title">Total Orders <span>📦</span></div>
+            <div class="kpi-value" id="totalOrders">0</div>
+            <div class="kpi-trend up">↑ 8.2% <span style="color:var(--muted);font-weight:400">vs last week</span></div>
+          </div>
+          <div class="kpi-card green">
+            <div class="kpi-title">Avg. Order Value <span>📈</span></div>
+            <div class="kpi-value" id="avgOrderValue">₹0</div>
+            <div class="kpi-trend up">↑ 2.1% <span style="color:var(--muted);font-weight:400">vs last week</span></div>
+          </div>
+          <div class="kpi-card purple">
+            <div class="kpi-title">Active Customers <span>👥</span></div>
+            <div class="kpi-value" id="totalCustomers">0</div>
+            <div class="kpi-trend down">↓ 1.4% <span style="color:var(--muted);font-weight:400">vs last week</span></div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3>Revenue Overview</h3>
+              <select id="chartFilter" onchange="updateChartData()">
+                <option value="7">Last 7 Days</option>
+                <option value="30">Last 30 Days</option>
+              </select>
+            </div>
+            <div class="chart-container">
+              <canvas id="lineChart"></canvas>
+            </div>
+          </div>
+          
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3>Sales by Category</h3>
+            </div>
+            <div class="chart-container">
+              <canvas id="doughnutChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="ordersTab" class="hidden fade-in">
+        <div class="table-card">
+          <div class="table-header">
+            <h3>All Orders</h3>
+            <button class="action-btn" onclick="loadOrders()">↻ Refresh Data</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="menuTab" class="hidden fade-in">
+        <div class="table-card">
+          <div class="table-header">
+            <h3>Menu Management</h3>
+            <button class="action-btn" style="background:var(--gold);color:#111" onclick="openModal('addDishModal')">+ Add New Dish</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Dish Name</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Type</th>
+                  <th>Availability</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="menuTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="customersTab" class="hidden fade-in">
+        <div class="table-card">
+          <div class="table-header">
+            <h3>Customer Database</h3>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Customer Name</th>
+                  <th>Phone / Email</th>
+                  <th>Total Orders</th>
+                  <th>Total Spent</th>
+                  <th>Last Order</th>
+                </tr>
+              </thead>
+              <tbody id="customersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
